@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build and test output
+dist/
+out/
+build/
+release/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# IDE and operating system files
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+
+# Electron packaging
+*.dmg
+*.AppImage
+*.deb
+*.exe
+*.blockmap
+latest*.yml
+
+# codebase-index cache (machine-local; do not commit)
+.claude/cache/codebase-index/
