@@ -17,6 +17,10 @@ The project does not have a released version yet.
 - Added an ignored local SQLite code index for repository retrieval.
 - Excluded generated `codebase-index` integration resources from retrieval
   results.
+- Added a pnpm workspace with strict shared TypeScript configuration.
+- Added formatting, linting, type-checking, testing, and build commands.
+- Added a locked dependency graph and an explicit pnpm build-script policy.
+- Added CI verification for Windows, macOS, and Linux.
 
 ### Removed
 

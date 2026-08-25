@@ -1,0 +1,8 @@
+.claude/
+.opencode/
+coverage/
+dist/
+node_modules/
+out/
+release/
+pnpm-lock.yaml

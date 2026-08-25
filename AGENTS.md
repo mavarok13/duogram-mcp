@@ -76,11 +76,14 @@ locating implementations, explaining flows, or assessing change impact.
 ## Current Commands
 
 ```bash
+pnpm install
+pnpm build
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm check
 codebase-index index
 codebase-index update
 codebase-index stats
 codebase-index doctor --strict
 ```
-
-Add build, lint, type-check, and test commands here after the TypeScript
-workspace is scaffolded.

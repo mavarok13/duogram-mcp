@@ -31,16 +31,21 @@ project -> spaces -> boards -> elements
 Persistent board history is out of scope. Undo and redo only cover the current
 desktop session.
 
-## Planned Architecture
+## Architecture
 
-The implementation will use a strict TypeScript monorepo when application code
-is introduced:
+The repository is a pnpm workspace with a shared strict TypeScript
+configuration. Package directories are introduced only when their application
+code is implemented. The intended boundaries are:
 
 ```text
 apps/desktop   Electron main process, typed preload API, and React renderer
 packages/core  Schemas, validation, board operations, and file storage
 packages/mcp   Universal stdio MCP server and the duogram CLI
 ```
+
+Node.js 22 is the minimum supported development runtime. The workspace uses
+ESLint, Prettier, TypeScript project references, and Vitest. CI runs the same
+quality pipeline on Windows, macOS, and Linux.
 
 The renderer must not access the filesystem directly. Board writes use schema
 validation, revision checks, and atomic file replacement. The desktop watches

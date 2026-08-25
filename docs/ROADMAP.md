@@ -12,11 +12,11 @@ changes belong in `CHANGELOG.md`.
 
 ## 1. TypeScript Workspace
 
-- [ ] Create the pnpm workspace and strict shared TypeScript configuration.
-- [ ] Add build, lint, type-check, and test commands.
-- [ ] Create package boundaries only for desktop, core, and MCP code that
-  exists at this stage.
-- [ ] Add CI for Windows, macOS, and Linux.
+- [x] Create the pnpm workspace and strict shared TypeScript configuration.
+- [x] Add build, lint, type-check, and test commands.
+- [x] Defer desktop, core, and MCP package directories until their application
+      code is introduced.
+- [x] Add CI for Windows, macOS, and Linux.
 
 ## 2. Core Domain and Storage
 
@@ -48,4 +48,4 @@ changes belong in `CHANGELOG.md`.
 - [ ] Publish the npm CLI and MCP package.
 - [ ] Add clean-machine installation and end-to-end smoke tests.
 - [ ] Document signing and notarization requirements separately from unsigned
-  development builds.
+      development builds.
