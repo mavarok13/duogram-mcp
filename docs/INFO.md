@@ -47,6 +47,9 @@ IDs are UUID v4 values. Board filenames use IDs rather than names, so moving a
 board between spaces or renaming it does not move its data file. Spaces are
 logical groups stored in the project manifest.
 
+Space and board names are display labels and do not need to be unique. IDs
+uniquely identify spaces and boards.
+
 ### Project Manifest
 
 ```json
@@ -219,13 +222,21 @@ project files and reloads clean boards when an agent changes them externally.
 
 ## Initialized Projects
 
-The Duogram initializer will create:
+The `duogram init` command creates:
 
 - `.duogram` for project, space, and board data.
-- `.opencode` for generated OpenCode agents, skills, and MCP integration.
+- `.opencode/opencode.json` with a local `duogram` MCP server entry. Existing
+  unrelated configuration is preserved.
+- `.opencode/agents/duogram.md` and `.opencode/skills/duogram/SKILL.md` with
+  generated agent guidance. Existing files at those paths are not overwritten.
 
 Generated board data and agent metadata must survive read-modify-write cycles
 without losing unknown fields.
+
+The universal stdio server is started with `duogram mcp --project <directory>`.
+It exposes project reads, space and board lifecycle tools, board reads, and
+atomic element operation batches. Every mutating tool requires the revision
+from the latest corresponding read.
 
 ## Delivery Targets
 

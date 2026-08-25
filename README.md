@@ -15,3 +15,19 @@ The workspace requires Node.js 22 or newer and pnpm 11.
 pnpm install
 pnpm check
 ```
+
+Build the workspace and initialize a local project with the development CLI:
+
+```bash
+pnpm build
+node packages/mcp/dist/cli.js init <project-directory> --name <project-name>
+```
+
+Run the stdio MCP server directly when testing an integration:
+
+```bash
+node packages/mcp/dist/cli.js mcp --project <project-directory>
+```
+
+Initialized projects contain `.duogram` board data and generated OpenCode
+integration under `.opencode`.

@@ -31,6 +31,13 @@ The project does not have a released version yet.
   concurrency checks, atomic JSON replacement, and manifest-to-board checks.
 - Added core tests for validation, operations, migrations, storage concurrency,
   future schema versions, and preservation of open-ended `agent_meta` data.
+- Added the `@duogram/mcp` package with the `duogram init` CLI and universal
+  stdio MCP server.
+- Added safe initialization of default project data and generated OpenCode MCP,
+  agent, and skill integration while preserving unrelated configuration.
+- Added revision-checked space and board lifecycle operations, board reads, and
+  atomic element operation batches through ten MCP tools.
+- Added MCP protocol and integration tests using the official SDK transport.
 
 ### Removed
 

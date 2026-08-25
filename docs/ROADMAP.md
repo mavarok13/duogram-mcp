@@ -28,11 +28,11 @@ changes belong in `CHANGELOG.md`.
 
 ## 3. CLI and MCP Server
 
-- [ ] Implement project initialization for `.duogram` and `.opencode`.
-- [ ] Implement space and board lifecycle operations.
-- [ ] Implement board reads and atomic batches of element operations.
-- [ ] Expose the operations through a universal stdio MCP server.
-- [ ] Add MCP protocol and integration tests.
+- [x] Implement project initialization for `.duogram` and `.opencode`.
+- [x] Implement space and board lifecycle operations.
+- [x] Implement board reads and atomic batches of element operations.
+- [x] Expose the operations through a universal stdio MCP server.
+- [x] Add MCP protocol and integration tests.
 
 ## 4. Desktop Application
 

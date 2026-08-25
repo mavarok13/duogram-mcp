@@ -11,5 +11,5 @@
     "types": ["node"]
   },
   "include": ["eslint.config.mjs"],
-  "references": [{ "path": "./packages/core" }]
+  "references": [{ "path": "./packages/core" }, { "path": "./packages/mcp" }]
 }

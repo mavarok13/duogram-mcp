@@ -68,4 +68,17 @@ describe("project storage", () => {
       RevisionConflictError,
     );
   });
+
+  it("deletes a board only at its expected revision", async () => {
+    const store = await storage();
+    const initial = await store.writeBoard(board(), -1);
+
+    await expect(store.deleteBoard(initial.id, 2)).rejects.toBeInstanceOf(
+      RevisionConflictError,
+    );
+    await store.deleteBoard(initial.id, 0);
+    await expect(store.readBoard(initial.id)).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+  });
 });

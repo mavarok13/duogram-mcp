@@ -94,3 +94,12 @@ export type BoardOperation =
   | { type: "add"; element: Element }
   | { type: "update"; element: Element }
   | { type: "delete"; element_id: string };
+
+export type ProjectOperation =
+  | { type: "add_space"; space: Space }
+  | { type: "rename_space"; space_id: string; name: string }
+  | { type: "delete_space"; space_id: string }
+  | { type: "add_board"; space_id: string; board: BoardSummary }
+  | { type: "rename_board"; board_id: string; name: string }
+  | { type: "move_board"; board_id: string; target_space_id: string }
+  | { type: "delete_board"; board_id: string };

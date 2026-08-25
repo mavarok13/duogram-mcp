@@ -78,6 +78,29 @@ export class ProjectStorage {
     );
   }
 
+  async deleteBoard(boardId: string, expectedRevision: number): Promise<void> {
+    await this.deleteBoardWithAction(boardId, expectedRevision, () =>
+      Promise.resolve(),
+    );
+  }
+
+  async deleteBoardWithAction<T>(
+    boardId: string,
+    expectedRevision: number,
+    beforeDelete: () => Promise<T>,
+  ): Promise<T> {
+    const filePath = this.boardPath(boardId);
+    return withLock(filePath, async () => {
+      const board = await this.readBoard(boardId);
+      if (board.revision !== expectedRevision) {
+        throw new RevisionConflictError(expectedRevision, board.revision);
+      }
+      const result = await beforeDelete();
+      await unlink(filePath);
+      return result;
+    });
+  }
+
   private boardPath(boardId: string): string {
     if (!/^[0-9a-f-]+$/.test(boardId)) {
       throw new DuogramValidationError(`invalid board ID for path: ${boardId}`);
