@@ -23,6 +23,14 @@ The project does not have a released version yet.
 - Added CI verification for Windows, macOS, and Linux.
 - Documented the accepted versioned JSON storage format for projects, boards,
   elements, connectors, text styles, and shape borders.
+- Added the `@duogram/core` package with public v1 project and board schemas,
+  strict boundary and domain validation, and sequential migration support.
+- Added immutable board element batches with revision checks and connector
+  detachment that preserves derived endpoints.
+- Added cross-platform project storage with cooperative write locks, optimistic
+  concurrency checks, atomic JSON replacement, and manifest-to-board checks.
+- Added core tests for validation, operations, migrations, storage concurrency,
+  future schema versions, and preservation of open-ended `agent_meta` data.
 
 ### Removed
 

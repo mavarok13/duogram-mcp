@@ -20,11 +20,11 @@ changes belong in `CHANGELOG.md`.
 
 ## 2. Core Domain and Storage
 
-- [ ] Define versioned project, space, board, and element schemas.
-- [ ] Model shapes, text, lines, arrows, and connector attachments.
-- [ ] Implement boundary validation and schema migration infrastructure.
-- [ ] Implement atomic writes and optimistic revision checks.
-- [ ] Test validation, operations, concurrency, and unknown `agent_meta` fields.
+- [x] Define versioned project, space, board, and element schemas.
+- [x] Model shapes, text, lines, arrows, and connector attachments.
+- [x] Implement boundary validation and schema migration infrastructure.
+- [x] Implement atomic writes and optimistic revision checks.
+- [x] Test validation, operations, concurrency, and unknown `agent_meta` fields.
 
 ## 3. CLI and MCP Server
 
