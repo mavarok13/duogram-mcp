@@ -31,6 +31,172 @@ project -> spaces -> boards -> elements
 Persistent board history is out of scope. Undo and redo only cover the current
 desktop session.
 
+## Persisted JSON Format
+
+Duogram data uses JSON with `snake_case` field names. The `.duogram` directory
+contains one project manifest and one file per board:
+
+```text
+.duogram/
+├─ project.json
+└─ boards/
+   └─ <board-id>.json
+```
+
+IDs are UUID v4 values. Board filenames use IDs rather than names, so moving a
+board between spaces or renaming it does not move its data file. Spaces are
+logical groups stored in the project manifest.
+
+### Project Manifest
+
+```json
+{
+  "schema_version": 1,
+  "id": "6251e344-f5d7-4a31-a187-e6af7dd36d42",
+  "name": "My project",
+  "revision": 3,
+  "spaces": [
+    {
+      "id": "a349a252-c715-4cb3-80d7-5cc037e89d60",
+      "name": "Architecture",
+      "boards": [
+        {
+          "id": "ee947ec8-7112-464b-aacc-72f94949988a",
+          "name": "Backend"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Each board ID must occur exactly once in the manifest and resolve to
+`.duogram/boards/<board-id>.json`. Array order defines the UI order of spaces
+and boards.
+
+### Board
+
+```json
+{
+  "schema_version": 1,
+  "id": "ee947ec8-7112-464b-aacc-72f94949988a",
+  "revision": 7,
+  "elements": []
+}
+```
+
+Element array order defines z-order. New elements are appended to the top.
+Pan, zoom, selection, and undo/redo state are not persisted in board JSON.
+
+### Shape
+
+```json
+{
+  "id": "ed61da9c-4808-4656-b893-dae123e597fe",
+  "type": "shape",
+  "shape_kind": "rectangle",
+  "position": { "x": 100, "y": 120 },
+  "size": { "width": 240, "height": 100 },
+  "content": "API server",
+  "color": "#3b82f6",
+  "border": {
+    "style": "solid",
+    "thickness": 2,
+    "color": "#1d4ed8"
+  },
+  "text_style": {
+    "horizontal_alignment": "center",
+    "vertical_alignment": "center",
+    "bold": true,
+    "italic": false,
+    "underline": false,
+    "strikethrough": false
+  },
+  "agent_meta": {
+    "description": "Public HTTP entry point"
+  }
+}
+```
+
+MVP shape kinds are `rectangle`, `ellipse`, and `diamond`. Shape `color` is the
+fill color. The application selects a contrasting content color. `border` is
+either `null` or an object with a positive finite `thickness`, a `color`, and a
+`style` of `solid`, `dashed`, or `dotted`.
+
+### Standalone Text
+
+```json
+{
+  "id": "8df88aae-aac4-411b-9051-b3db988262e7",
+  "type": "text",
+  "position": { "x": 100, "y": 260 },
+  "size": { "width": 240, "height": 80 },
+  "content": "Request processing",
+  "color": "#111827",
+  "text_style": {
+    "horizontal_alignment": "left",
+    "vertical_alignment": "top",
+    "bold": false,
+    "italic": false,
+    "underline": false,
+    "strikethrough": false
+  },
+  "agent_meta": {}
+}
+```
+
+`horizontal_alignment` accepts `left`, `center`, or `right`.
+`vertical_alignment` accepts `top`, `center`, or `bottom`. The `bold`,
+`italic`, `underline`, and `strikethrough` modifiers are independent booleans.
+All text-style fields are explicit and required. Text inside shapes uses the
+same structure; connector labels do not use `text_style` in the MVP.
+
+### Connector
+
+```json
+{
+  "id": "bd8bf9ef-bd51-4674-b666-83c228a61188",
+  "type": "connector",
+  "connector_kind": "arrow",
+  "points": [
+    { "x": 340, "y": 170 },
+    { "x": 500, "y": 170 }
+  ],
+  "source_attachment": {
+    "element_id": "ed61da9c-4808-4656-b893-dae123e597fe",
+    "anchor": { "x": 1, "y": 0.5 }
+  },
+  "target_attachment": {
+    "element_id": "840a6e94-7845-49f7-9486-c124466cff51",
+    "anchor": { "x": 0, "y": 0.5 }
+  },
+  "content": "HTTP",
+  "color": "#64748b",
+  "agent_meta": {}
+}
+```
+
+Connector kinds are `line` and `arrow`. Connectors contain at least two
+absolute points. Source and target attachments are optional and use normalized
+anchor coordinates from zero to one. Stored points are fallback positions if
+an attachment is removed. Connectors do not store derived `position` or `size`
+values. Deleting an attached element detaches the connector and preserves its
+last endpoint position.
+
+### Format Invariants
+
+- `schema_version` versions the persisted API independently for manifests and
+  boards. Incompatible changes require sequential migrations.
+- Unknown future schema versions must not be overwritten.
+- `revision` is a non-negative integer incremented on each successful write to
+  that file. Writes require the expected revision.
+- Structure outside `agent_meta` is strict. `agent_meta` accepts nested JSON
+  values and unknown entries must survive read-modify-write cycles.
+- References and attachment targets are validated as domain invariants in
+  addition to structural JSON Schema validation.
+- Files use two-space indentation, stable field ordering, and a final newline.
+- Writes use atomic file replacement. JSON files remain the source of truth.
+
 ## Architecture
 
 The repository is a pnpm workspace with a shared strict TypeScript

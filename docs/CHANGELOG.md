@@ -21,6 +21,8 @@ The project does not have a released version yet.
 - Added formatting, linting, type-checking, testing, and build commands.
 - Added a locked dependency graph and an explicit pnpm build-script policy.
 - Added CI verification for Windows, macOS, and Linux.
+- Documented the accepted versioned JSON storage format for projects, boards,
+  elements, connectors, text styles, and shape borders.
 
 ### Removed
 
