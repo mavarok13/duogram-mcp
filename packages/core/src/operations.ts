@@ -1,4 +1,5 @@
 import { RevisionConflictError } from "./errors.js";
+import { assertBoardInvariants } from "./invariants.js";
 import type {
   BoardOperation,
   BoardV1,
@@ -7,7 +8,6 @@ import type {
   ShapeElement,
   TextElement,
 } from "./types.js";
-import { validateBoard } from "./validation.js";
 
 export function applyBoardOperations(
   board: BoardV1,
@@ -44,11 +44,13 @@ export function applyBoardOperations(
     }
   }
 
-  return validateBoard({
+  const next = {
     ...board,
     revision: board.revision + 1,
     elements,
-  });
+  };
+  assertBoardInvariants(next);
+  return next;
 }
 
 function detachFromElement(

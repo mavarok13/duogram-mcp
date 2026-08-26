@@ -11,5 +11,10 @@
     "types": ["node"]
   },
   "include": ["eslint.config.mjs"],
-  "references": [{ "path": "./packages/core" }, { "path": "./packages/mcp" }]
+  "references": [
+    { "path": "./apps/desktop/tsconfig.main.json" },
+    { "path": "./apps/desktop/tsconfig.renderer.json" },
+    { "path": "./packages/core" },
+    { "path": "./packages/mcp" }
+  ]
 }

@@ -36,11 +36,11 @@ changes belong in `CHANGELOG.md`.
 
 ## 4. Desktop Application
 
-- [ ] Create the Electron main process, preload API, and React renderer.
-- [ ] Add project opening and space/board navigation.
-- [ ] Add the visual canvas and MVP element editing.
-- [ ] Add in-session undo and redo.
-- [ ] Add autosave, filesystem watching, validation errors, and conflict UI.
+- [x] Create the Electron main process, preload API, and React renderer.
+- [x] Add project opening and space/board navigation.
+- [x] Add the visual canvas and MVP element editing.
+- [x] Add in-session undo and redo.
+- [x] Add autosave, filesystem watching, validation errors, and conflict UI.
 
 ## 5. Distribution
 

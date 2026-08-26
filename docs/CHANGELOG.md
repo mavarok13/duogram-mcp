@@ -38,6 +38,20 @@ The project does not have a released version yet.
 - Added revision-checked space and board lifecycle operations, board reads, and
   atomic element operation batches through ten MCP tools.
 - Added MCP protocol and integration tests using the official SDK transport.
+- Added the Electron desktop application with a sandboxed preload bridge and
+  React renderer.
+- Added project opening, space and board navigation, and an SVG board canvas
+  for shapes, standalone text, lines, arrows, and attached connector endpoints.
+- Added element dragging, geometry and style inspection, session undo and redo,
+  and revision-checked autosave.
+- Added filesystem watching with clean-board reloads, validation feedback, and
+  explicit conflict resolution for concurrent agent and desktop edits.
+- Added desktop tests for session history, error mapping, project writes, and
+  external board change notifications.
+- Configured relative renderer asset paths so Electron can load the production
+  Vite bundle through `file://` URLs.
+- Kept browser-side board operations free of the Node storage and Ajv runtime,
+  preventing CSP `unsafe-eval` failures in the Electron renderer.
 
 ### Removed
 

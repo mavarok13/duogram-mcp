@@ -3,4 +3,8 @@ packages:
   - packages/*
 
 allowBuilds:
+  electron: true
   esbuild: true
+
+minimumReleaseAgeExclude:
+  - electron@44.0.0

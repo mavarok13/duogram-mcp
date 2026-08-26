@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist/main",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/main/tsconfig.tsbuildinfo",
+    "types": ["node", "electron"],
+    "verbatimModuleSyntax": false
+  },
+  "include": [
+    "src/main/**/*.ts",
+    "src/preload/**/*.ts",
+    "src/preload/**/*.cts",
+    "src/shared/**/*.ts"
+  ],
+  "references": [{ "path": "../../packages/core" }]
+}

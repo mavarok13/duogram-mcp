@@ -1,5 +1,6 @@
 export * from "./errors.js";
 export * from "./migrations.js";
+export * from "./invariants.js";
 export * from "./operations.js";
 export * from "./project-operations.js";
 export * from "./schemas.js";

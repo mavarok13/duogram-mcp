@@ -220,6 +220,13 @@ The renderer must not access the filesystem directly. Board writes use schema
 validation, revision checks, and atomic file replacement. The desktop watches
 project files and reloads clean boards when an agent changes them externally.
 
+The desktop application uses an Electron main process and a context-isolated,
+sandboxed preload bridge. Its React renderer provides project navigation, an
+SVG canvas for MVP elements, connector endpoint attachment, and an inspector
+for content, geometry, and style. Undo and redo are scoped to the current board
+and desktop session. Autosave uses optimistic board revisions; external changes
+reload clean boards and surface an explicit conflict when local edits are dirty.
+
 ## Initialized Projects
 
 The `duogram init` command creates:

@@ -31,3 +31,12 @@ node packages/mcp/dist/cli.js mcp --project <project-directory>
 
 Initialized projects contain `.duogram` board data and generated OpenCode
 integration under `.opencode`.
+
+Run the development desktop application after initializing a project:
+
+```bash
+pnpm --filter @duogram/desktop start
+```
+
+Choose the initialized project directory in the opening screen. The desktop
+autosaves board edits and watches for changes made through MCP.
