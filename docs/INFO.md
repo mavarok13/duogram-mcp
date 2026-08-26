@@ -108,6 +108,7 @@ Pan, zoom, selection, and undo/redo state are not persisted in board JSON.
     "color": "#1d4ed8"
   },
   "text_style": {
+    "font_family": "Roboto",
     "horizontal_alignment": "center",
     "vertical_alignment": "center",
     "bold": true,
@@ -137,6 +138,7 @@ either `null` or an object with a positive finite `thickness`, a `color`, and a
   "content": "Request processing",
   "color": "#111827",
   "text_style": {
+    "font_family": "Roboto",
     "horizontal_alignment": "left",
     "vertical_alignment": "top",
     "bold": false,
@@ -151,8 +153,14 @@ either `null` or an object with a positive finite `thickness`, a `color`, and a
 `horizontal_alignment` accepts `left`, `center`, or `right`.
 `vertical_alignment` accepts `top`, `center`, or `bottom`. The `bold`,
 `italic`, `underline`, and `strikethrough` modifiers are independent booleans.
-All text-style fields are explicit and required. Text inside shapes uses the
-same structure; connector labels do not use `text_style` in the MVP.
+`font_family` accepts `Roboto`, `Montserrat`, `Open Sans`, `Source Sans 3`, or
+`System UI`. Text inside shapes uses the same structure; connector labels do not
+use `text_style` in the MVP. Legacy v1 boards without `font_family` are read
+with `Roboto` and receive the explicit field on their next write.
+
+Roboto, Montserrat, Open Sans, and Source Sans 3 are bundled under the SIL Open
+Font License 1.1 through the Fontsource packages. `System UI` uses the host
+operating system and does not add a bundled font license.
 
 ### Connector
 
@@ -223,9 +231,13 @@ project files and reloads clean boards when an agent changes them externally.
 The desktop application uses an Electron main process and a context-isolated,
 sandboxed preload bridge. Its React renderer provides project navigation, an
 SVG canvas for MVP elements, connector endpoint attachment, and an inspector
-for content, geometry, and style. Undo and redo are scoped to the current board
-and desktop session. Autosave uses optimistic board revisions; external changes
-reload clean boards and surface an explicit conflict when local edits are dirty.
+for content, geometry, border, font, and style. The canvas supports additive
+multi-selection with Shift/Ctrl/Cmd, group dragging, mouse resizing of shapes
+and text blocks, automatic word wrapping inside those blocks, left-button
+panning on the empty field, and wheel zoom anchored at the current viewport
+center. Undo and redo are scoped to the current board and desktop session.
+Autosave uses optimistic board revisions; external changes reload clean boards
+and surface an explicit conflict when local edits are dirty.
 
 ## Initialized Projects
 

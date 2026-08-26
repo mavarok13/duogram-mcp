@@ -12,6 +12,7 @@ export interface Size {
 }
 
 export interface TextStyle {
+  font_family: FontFamily;
   horizontal_alignment: "left" | "center" | "right";
   vertical_alignment: "top" | "center" | "bottom";
   bold: boolean;
@@ -19,6 +20,9 @@ export interface TextStyle {
   underline: boolean;
   strikethrough: boolean;
 }
+
+export type FontFamily =
+  "Roboto" | "Montserrat" | "Open Sans" | "Source Sans 3" | "System UI";
 
 export interface Border {
   style: "solid" | "dashed" | "dotted";

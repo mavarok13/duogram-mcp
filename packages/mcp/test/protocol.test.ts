@@ -61,6 +61,7 @@ describe("MCP protocol", () => {
                 content: "Hello",
                 color: "#111827",
                 text_style: {
+                  font_family: "Roboto",
                   horizontal_alignment: "left",
                   vertical_alignment: "top",
                   bold: false,

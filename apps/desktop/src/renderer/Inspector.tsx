@@ -1,4 +1,17 @@
-import type { Element, ShapeElement, TextElement } from "@duogram/core";
+import type {
+  Element,
+  FontFamily,
+  ShapeElement,
+  TextElement,
+} from "@duogram/core";
+
+const fontOptions: readonly { value: FontFamily; license: string }[] = [
+  { value: "Roboto", license: "SIL OFL 1.1" },
+  { value: "Montserrat", license: "SIL OFL 1.1" },
+  { value: "Open Sans", license: "SIL OFL 1.1" },
+  { value: "Source Sans 3", license: "SIL OFL 1.1" },
+  { value: "System UI", license: "OS provided" },
+];
 
 interface InspectorProps {
   element: Element | null;
@@ -62,22 +75,25 @@ export function Inspector({ element, onChange, onDelete }: InspectorProps) {
       </label>
 
       {element.type === "shape" && (
-        <label className="field">
-          <span>Shape</span>
-          <select
-            value={element.shape_kind}
-            onChange={(event) => {
-              onChange({
-                ...element,
-                shape_kind: event.target.value as ShapeElement["shape_kind"],
-              });
-            }}
-          >
-            <option value="rectangle">Rectangle</option>
-            <option value="ellipse">Ellipse</option>
-            <option value="diamond">Diamond</option>
-          </select>
-        </label>
+        <>
+          <label className="field">
+            <span>Shape</span>
+            <select
+              value={element.shape_kind}
+              onChange={(event) => {
+                onChange({
+                  ...element,
+                  shape_kind: event.target.value as ShapeElement["shape_kind"],
+                });
+              }}
+            >
+              <option value="rectangle">Rectangle</option>
+              <option value="ellipse">Ellipse</option>
+              <option value="diamond">Diamond</option>
+            </select>
+          </label>
+          <BorderFields element={element} onChange={onChange} />
+        </>
       )}
 
       {element.type !== "connector" && (
@@ -212,6 +228,27 @@ function TextStyleFields({
   return (
     <fieldset className="text-style-panel">
       <legend>Text</legend>
+      <label className="font-field">
+        <span>Font family</span>
+        <select
+          value={style.font_family}
+          onChange={(event) => {
+            onChange({
+              ...element,
+              text_style: {
+                ...style,
+                font_family: event.target.value as FontFamily,
+              },
+            });
+          }}
+        >
+          {fontOptions.map((font) => (
+            <option key={font.value} value={font.value}>
+              {font.value} ({font.license})
+            </option>
+          ))}
+        </select>
+      </label>
       <div className="segmented">
         {(["left", "center", "right"] as const).map((alignment) => (
           <button
@@ -279,6 +316,96 @@ function TextStyleFields({
           S
         </button>
       </div>
+    </fieldset>
+  );
+}
+
+function BorderFields({
+  element,
+  onChange,
+}: {
+  element: ShapeElement;
+  onChange: (element: Element) => void;
+}) {
+  const border = element.border;
+  return (
+    <fieldset className="border-panel">
+      <legend>Border</legend>
+      <label className="border-toggle">
+        <input
+          type="checkbox"
+          checked={border !== null}
+          onChange={(event) => {
+            onChange({
+              ...element,
+              border: event.target.checked
+                ? (border ?? { style: "solid", thickness: 2, color: "#93c5fd" })
+                : null,
+            });
+          }}
+        />
+        <span>{border === null ? "No border" : "Show border"}</span>
+      </label>
+      {border !== null && (
+        <div className="border-controls">
+          <label>
+            <span>Style</span>
+            <select
+              value={border.style}
+              onChange={(event) => {
+                onChange({
+                  ...element,
+                  border: {
+                    ...border,
+                    style: event.target.value as NonNullable<
+                      ShapeElement["border"]
+                    >["style"],
+                  },
+                });
+              }}
+            >
+              <option value="solid">Solid</option>
+              <option value="dashed">Dashed</option>
+              <option value="dotted">Dotted</option>
+            </select>
+          </label>
+          <label>
+            <span>Thickness</span>
+            <input
+              type="number"
+              min="0.5"
+              step="0.5"
+              value={border.thickness}
+              onChange={(event) => {
+                const thickness = Number(event.target.value);
+                onChange({
+                  ...element,
+                  border: {
+                    ...border,
+                    thickness: Number.isFinite(thickness)
+                      ? Math.max(0.5, thickness)
+                      : border.thickness,
+                  },
+                });
+              }}
+            />
+          </label>
+          <label className="border-color">
+            <span>Color</span>
+            <input
+              type="color"
+              value={border.color}
+              onChange={(event) => {
+                onChange({
+                  ...element,
+                  border: { ...border, color: event.target.value },
+                });
+              }}
+            />
+            <code>{border.color}</code>
+          </label>
+        </div>
+      )}
     </fieldset>
   );
 }

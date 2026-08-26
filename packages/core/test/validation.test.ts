@@ -24,6 +24,20 @@ describe("boundary validation", () => {
     expect(() => validateBoard(value)).toThrow(DuogramValidationError);
   });
 
+  it("adds the default font when reading a legacy v1 board", () => {
+    const value = structuredClone(board());
+    const shape = value.elements[0];
+    if (shape?.type !== "shape") throw new Error("invalid fixture");
+    const style = shape.text_style as unknown as Record<string, unknown>;
+    delete style["font_family"];
+
+    const result = validateBoard(value);
+
+    expect(result.elements[0]).toMatchObject({
+      text_style: { font_family: "Roboto" },
+    });
+  });
+
   it("rejects dangling connector attachments", () => {
     const value = board();
     const connector = value.elements[1];

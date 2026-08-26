@@ -16,6 +16,7 @@ export const IDs = {
 } as const;
 
 const textStyle: TextStyle = {
+  font_family: "Roboto",
   horizontal_alignment: "center",
   vertical_alignment: "center",
   bold: false,

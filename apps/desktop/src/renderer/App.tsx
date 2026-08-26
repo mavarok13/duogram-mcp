@@ -27,9 +27,7 @@ export function App() {
   const [project, setProject] = useState<ProjectV1 | null>(null);
   const [selectedBoardId, setSelectedBoardId] = useState<string | null>(null);
   const [history, setHistory] = useState<History<BoardV1> | null>(null);
-  const [selectedElementId, setSelectedElementId] = useState<string | null>(
-    null,
-  );
+  const [selectedElementIds, setSelectedElementIds] = useState<string[]>([]);
   const [savedRevision, setSavedRevision] = useState(0);
   const [editVersion, setEditVersion] = useState(0);
   const [savedVersion, setSavedVersion] = useState(0);
@@ -43,7 +41,8 @@ export function App() {
     dirty && saveState === "saved" ? "dirty" : saveState;
   const board = history?.present ?? null;
   const selectedElement =
-    board?.elements.find((element) => element.id === selectedElementId) ?? null;
+    board?.elements.find((element) => element.id === selectedElementIds[0]) ??
+    null;
 
   const loadBoard = async (boardId: string) => {
     const result = await window.duogram.readBoard(boardId);
@@ -53,7 +52,7 @@ export function App() {
     }
     setSelectedBoardId(boardId);
     setHistory(createHistory(result.value));
-    setSelectedElementId(null);
+    setSelectedElementIds([]);
     setSavedRevision(result.value.revision);
     setEditVersion(0);
     setSavedVersion(0);
@@ -110,19 +109,24 @@ export function App() {
   };
 
   const deleteSelected = () => {
-    if (board === null || selectedElementId === null) return;
-    const next = applyBoardOperations(board, board.revision, [
-      { type: "delete", element_id: selectedElementId },
-    ]);
+    if (board === null || selectedElementIds.length === 0) return;
+    const next = applyBoardOperations(
+      board,
+      board.revision,
+      selectedElementIds.map((element_id) => ({
+        type: "delete" as const,
+        element_id,
+      })),
+    );
     commitBoard({ ...next, revision: board.revision });
-    setSelectedElementId(null);
+    setSelectedElementIds([]);
   };
 
   const addElement = (kind: NewElementKind) => {
     if (board === null) return;
     const element = createElement(kind, board.elements.length);
     commitBoard({ ...board, elements: [...board.elements, element] });
-    setSelectedElementId(element.id);
+    setSelectedElementIds([element.id]);
   };
 
   const undo = () => {
@@ -391,8 +395,8 @@ export function App() {
           ) : (
             <Canvas
               board={board}
-              selectedId={selectedElementId}
-              onSelect={setSelectedElementId}
+              selectedIds={selectedElementIds}
+              onSelect={setSelectedElementIds}
               onCommit={commitBoard}
             />
           )}

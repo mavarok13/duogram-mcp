@@ -11,23 +11,34 @@ import type {
 
 interface CanvasProps {
   board: BoardV1;
-  selectedId: string | null;
-  onSelect: (id: string | null) => void;
+  selectedIds: readonly string[];
+  onSelect: (ids: string[]) => void;
   onCommit: (board: BoardV1) => void;
 }
 
 interface DragState {
-  elementId: string;
+  elementIds: string[];
   start: Point;
+  startClient: Point;
   board: BoardV1;
-  mode: "move" | "source" | "target";
+  mode: "move" | "resize" | "source" | "target";
+  resizeHandle?: ResizeHandle;
+  startPan: Point;
 }
 
-export function Canvas({ board, selectedId, onSelect, onCommit }: CanvasProps) {
+export type ResizeHandle = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
+
+export function Canvas({
+  board,
+  selectedIds,
+  onSelect,
+  onCommit,
+}: CanvasProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const dragRef = useRef<DragState | null>(null);
   const [preview, setPreview] = useState<BoardV1 | null>(null);
   const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState<Point>({ x: 0, y: 0 });
 
   useEffect(() => {
     setPreview(null);
@@ -36,12 +47,26 @@ export function Canvas({ board, selectedId, onSelect, onCommit }: CanvasProps) {
 
   const startDrag = (event: PointerEvent, elementId: string) => {
     event.stopPropagation();
-    onSelect(elementId);
+    const additive = event.shiftKey || event.ctrlKey || event.metaKey;
+    if (additive) {
+      onSelect(
+        selectedIds.includes(elementId)
+          ? selectedIds.filter((id) => id !== elementId)
+          : [...selectedIds, elementId],
+      );
+      return;
+    }
+    const elementIds = selectedIds.includes(elementId)
+      ? [...selectedIds]
+      : [elementId];
+    onSelect(elementIds);
     dragRef.current = {
-      elementId,
+      elementIds,
       start: clientPoint(event.clientX, event.clientY, svgRef.current),
+      startClient: { x: event.clientX, y: event.clientY },
       board,
       mode: "move",
+      startPan: pan,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
   };
@@ -52,12 +77,47 @@ export function Canvas({ board, selectedId, onSelect, onCommit }: CanvasProps) {
     mode: "source" | "target",
   ) => {
     event.stopPropagation();
-    onSelect(elementId);
+    onSelect([elementId]);
     dragRef.current = {
-      elementId,
+      elementIds: [elementId],
       start: clientPoint(event.clientX, event.clientY, svgRef.current),
+      startClient: { x: event.clientX, y: event.clientY },
       board,
       mode,
+      startPan: pan,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const startResizeDrag = (
+    event: PointerEvent,
+    elementId: string,
+    handle: ResizeHandle,
+  ) => {
+    event.stopPropagation();
+    onSelect([elementId]);
+    dragRef.current = {
+      elementIds: [elementId],
+      start: clientPoint(event.clientX, event.clientY, svgRef.current),
+      startClient: { x: event.clientX, y: event.clientY },
+      board,
+      mode: "resize",
+      resizeHandle: handle,
+      startPan: pan,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const startPan = (event: PointerEvent<SVGSVGElement>) => {
+    if (event.button !== 0 || event.target !== event.currentTarget) return;
+    onSelect([]);
+    dragRef.current = {
+      elementIds: [],
+      start: clientPoint(event.clientX, event.clientY, svgRef.current),
+      startClient: { x: event.clientX, y: event.clientY },
+      board,
+      mode: "move",
+      startPan: pan,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
   };
@@ -65,26 +125,55 @@ export function Canvas({ board, selectedId, onSelect, onCommit }: CanvasProps) {
   const moveDrag = (event: PointerEvent<SVGSVGElement>) => {
     const drag = dragRef.current;
     if (drag === null) return;
+    if (drag.elementIds.length === 0) {
+      const rect = svgRef.current?.getBoundingClientRect();
+      if (rect === undefined) return;
+      const viewWidth = 1200 / zoom;
+      const viewHeight = 760 / zoom;
+      setPan({
+        x:
+          drag.startPan.x -
+          ((event.clientX - drag.startClient.x) / rect.width) * viewWidth,
+        y:
+          drag.startPan.y -
+          ((event.clientY - drag.startClient.y) / rect.height) * viewHeight,
+      });
+      return;
+    }
     const current = clientPoint(event.clientX, event.clientY, svgRef.current);
-    setPreview(
-      drag.mode === "move"
-        ? moveElement(
-            drag.board,
-            drag.elementId,
-            current.x - drag.start.x,
-            current.y - drag.start.y,
-          )
-        : setConnectorEndpoint(drag.board, drag.elementId, drag.mode, current),
-    );
+    const dx = current.x - drag.start.x;
+    const dy = current.y - drag.start.y;
+    if (drag.mode === "move") {
+      setPreview(moveElements(drag.board, drag.elementIds, dx, dy));
+    } else if (drag.mode === "resize" && drag.resizeHandle !== undefined) {
+      setPreview(
+        resizeElement(
+          drag.board,
+          drag.elementIds[0] ?? "",
+          drag.resizeHandle,
+          dx,
+          dy,
+        ),
+      );
+    } else if (drag.mode === "source" || drag.mode === "target") {
+      setPreview(
+        setConnectorEndpoint(
+          drag.board,
+          drag.elementIds[0] ?? "",
+          drag.mode,
+          current,
+        ),
+      );
+    }
   };
 
   const finishDrag = () => {
     const drag = dragRef.current;
     if (drag !== null && preview !== null) {
       onCommit(
-        drag.mode === "move"
+        drag.mode === "move" || drag.mode === "resize"
           ? preview
-          : snapConnectorEndpoint(preview, drag.elementId, drag.mode),
+          : snapConnectorEndpoint(preview, drag.elementIds[0] ?? "", drag.mode),
       );
     }
     dragRef.current = null;
@@ -97,7 +186,7 @@ export function Canvas({ board, selectedId, onSelect, onCommit }: CanvasProps) {
         <button
           type="button"
           onClick={() => {
-            setZoom((value) => Math.max(0.5, value - 0.1));
+            setZoomCentered(-0.1, zoom, setZoom, setPan);
           }}
         >
           -
@@ -106,7 +195,7 @@ export function Canvas({ board, selectedId, onSelect, onCommit }: CanvasProps) {
         <button
           type="button"
           onClick={() => {
-            setZoom((value) => Math.min(2, value + 0.1));
+            setZoomCentered(0.1, zoom, setZoom, setPan);
           }}
         >
           +
@@ -115,12 +204,14 @@ export function Canvas({ board, selectedId, onSelect, onCommit }: CanvasProps) {
       <svg
         ref={svgRef}
         className="board-canvas"
-        viewBox={`0 0 ${String(1200 / zoom)} ${String(760 / zoom)}`}
+        viewBox={`${String(pan.x)} ${String(pan.y)} ${String(1200 / zoom)} ${String(760 / zoom)}`}
         onPointerMove={moveDrag}
         onPointerUp={finishDrag}
         onPointerCancel={finishDrag}
-        onPointerDown={(event) => {
-          if (event.target === event.currentTarget) onSelect(null);
+        onPointerDown={startPan}
+        onWheel={(event) => {
+          event.preventDefault();
+          setZoomCentered(event.deltaY < 0 ? 0.1 : -0.1, zoom, setZoom, setPan);
         }}
       >
         <defs>
@@ -164,12 +255,15 @@ export function Canvas({ board, selectedId, onSelect, onCommit }: CanvasProps) {
             key={element.id}
             element={element}
             board={displayed}
-            selected={element.id === selectedId}
+            selected={selectedIds.includes(element.id)}
             onPointerDown={(event) => {
               startDrag(event, element.id);
             }}
             onEndpointPointerDown={(event, mode) => {
               startEndpointDrag(event, element.id, mode);
+            }}
+            onResizePointerDown={(event, handle) => {
+              startResizeDrag(event, element.id, handle);
             }}
           />
         ))}
@@ -184,6 +278,7 @@ function ElementView({
   selected,
   onPointerDown,
   onEndpointPointerDown,
+  onResizePointerDown,
 }: {
   element: Element;
   board: BoardV1;
@@ -193,6 +288,7 @@ function ElementView({
     event: PointerEvent,
     mode: "source" | "target",
   ) => void;
+  onResizePointerDown: (event: PointerEvent, handle: ResizeHandle) => void;
 }) {
   if (element.type === "connector") {
     const points = connectorPoints(element, board);
@@ -266,6 +362,51 @@ function ElementView({
           rx="5"
         />
       )}
+      {selected && (
+        <ResizeHandles element={element} onPointerDown={onResizePointerDown} />
+      )}
+    </g>
+  );
+}
+
+function ResizeHandles({
+  element,
+  onPointerDown,
+}: {
+  element: ShapeElement | TextElement;
+  onPointerDown: (event: PointerEvent, handle: ResizeHandle) => void;
+}) {
+  const left = element.position.x;
+  const top = element.position.y;
+  const right = left + element.size.width;
+  const bottom = top + element.size.height;
+  const centerX = left + element.size.width / 2;
+  const centerY = top + element.size.height / 2;
+  const handles: readonly { name: ResizeHandle; x: number; y: number }[] = [
+    { name: "nw", x: left, y: top },
+    { name: "n", x: centerX, y: top },
+    { name: "ne", x: right, y: top },
+    { name: "e", x: right, y: centerY },
+    { name: "se", x: right, y: bottom },
+    { name: "s", x: centerX, y: bottom },
+    { name: "sw", x: left, y: bottom },
+    { name: "w", x: left, y: centerY },
+  ];
+  return (
+    <g className="resize-handles">
+      {handles.map((handle) => (
+        <rect
+          key={handle.name}
+          className={`resize-handle resize-${handle.name}`}
+          x={handle.x - 4}
+          y={handle.y - 4}
+          width="8"
+          height="8"
+          onPointerDown={(event) => {
+            onPointerDown(event, handle.name);
+          }}
+        />
+      ))}
     </g>
   );
 }
@@ -327,50 +468,55 @@ function StyledText({
   contrast: boolean;
 }) {
   const style = element.text_style;
-  const x =
-    style.horizontal_alignment === "left"
-      ? element.position.x + 12
-      : style.horizontal_alignment === "right"
-        ? element.position.x + element.size.width - 12
-        : element.position.x + element.size.width / 2;
-  const y =
-    style.vertical_alignment === "top"
-      ? element.position.y + 24
-      : style.vertical_alignment === "bottom"
-        ? element.position.y + element.size.height - 12
-        : element.position.y + element.size.height / 2 + 6;
   return (
-    <text
-      x={x}
-      y={y}
-      fill={contrast ? readableColor(element.color) : element.color}
-      textAnchor={
-        style.horizontal_alignment === "left"
-          ? "start"
-          : style.horizontal_alignment === "right"
-            ? "end"
-            : "middle"
-      }
-      fontWeight={style.bold ? 700 : 500}
-      fontStyle={style.italic ? "italic" : "normal"}
-      textDecoration={`${style.underline ? "underline " : ""}${style.strikethrough ? "line-through" : ""}`.trim()}
-      className="element-text"
+    <foreignObject
+      x={element.position.x}
+      y={element.position.y}
+      width={element.size.width}
+      height={element.size.height}
+      className="element-text-block"
     >
-      {element.content || " "}
-    </text>
+      <div
+        className="element-text"
+        style={{
+          alignItems:
+            style.vertical_alignment === "top"
+              ? "flex-start"
+              : style.vertical_alignment === "bottom"
+                ? "flex-end"
+                : "center",
+          color: contrast ? readableColor(element.color) : element.color,
+          fontFamily:
+            style.font_family === "System UI" ? "system-ui" : style.font_family,
+          fontStyle: style.italic ? "italic" : "normal",
+          fontWeight: style.bold ? 700 : 500,
+          justifyContent:
+            style.horizontal_alignment === "left"
+              ? "flex-start"
+              : style.horizontal_alignment === "right"
+                ? "flex-end"
+                : "center",
+          textAlign: style.horizontal_alignment,
+          textDecoration:
+            `${style.underline ? "underline " : ""}${style.strikethrough ? "line-through" : ""}`.trim(),
+        }}
+      >
+        {element.content || " "}
+      </div>
+    </foreignObject>
   );
 }
 
-function moveElement(
+export function moveElements(
   board: BoardV1,
-  elementId: string,
+  elementIds: readonly string[],
   dx: number,
   dy: number,
 ): BoardV1 {
   return {
     ...board,
     elements: board.elements.map((element) => {
-      if (element.id !== elementId) return element;
+      if (!elementIds.includes(element.id)) return element;
       if (element.type === "connector") {
         return {
           ...element,
@@ -385,6 +531,85 @@ function moveElement(
         position: { x: element.position.x + dx, y: element.position.y + dy },
       };
     }),
+  };
+}
+
+const MIN_ELEMENT_SIZE = 24;
+
+export function resizeElement(
+  board: BoardV1,
+  elementId: string,
+  handle: ResizeHandle,
+  dx: number,
+  dy: number,
+): BoardV1 {
+  const target = board.elements.find(
+    (element): element is ShapeElement | TextElement =>
+      element.id === elementId && element.type !== "connector",
+  );
+  if (target === undefined) return board;
+
+  const right = target.position.x + target.size.width;
+  const bottom = target.position.y + target.size.height;
+  const nextLeft = handle.endsWith("w")
+    ? Math.min(right - MIN_ELEMENT_SIZE, target.position.x + dx)
+    : target.position.x;
+  const nextRight = handle.endsWith("e")
+    ? Math.max(target.position.x + MIN_ELEMENT_SIZE, right + dx)
+    : right;
+  const nextTop = handle.startsWith("n")
+    ? Math.min(bottom - MIN_ELEMENT_SIZE, target.position.y + dy)
+    : target.position.y;
+  const nextBottom = handle.startsWith("s")
+    ? Math.max(target.position.y + MIN_ELEMENT_SIZE, bottom + dy)
+    : bottom;
+
+  return {
+    ...board,
+    elements: board.elements.map((element) =>
+      element.id === elementId && element.type !== "connector"
+        ? {
+            ...element,
+            position: { x: nextLeft, y: nextTop },
+            size: {
+              width: nextRight - nextLeft,
+              height: nextBottom - nextTop,
+            },
+          }
+        : element,
+    ),
+  };
+}
+
+function setZoomCentered(
+  delta: number,
+  currentZoom: number,
+  setZoom: (value: number) => void,
+  setPan: (value: Point | ((current: Point) => Point)) => void,
+): void {
+  const next = zoomViewBoxCentered({ x: 0, y: 0 }, currentZoom, delta);
+  if (next.zoom === currentZoom) return;
+  setPan((current) => zoomViewBoxCentered(current, currentZoom, delta).pan);
+  setZoom(next.zoom);
+}
+
+export function zoomViewBoxCentered(
+  pan: Point,
+  currentZoom: number,
+  delta: number,
+): { pan: Point; zoom: number } {
+  const zoom = Math.max(0.5, Math.min(2, currentZoom + delta));
+  if (zoom === currentZoom) return { pan, zoom };
+  const oldWidth = 1200 / currentZoom;
+  const oldHeight = 760 / currentZoom;
+  const newWidth = 1200 / zoom;
+  const newHeight = 760 / zoom;
+  return {
+    zoom,
+    pan: {
+      x: pan.x + (oldWidth - newWidth) / 2,
+      y: pan.y + (oldHeight - newHeight) / 2,
+    },
   };
 }
 

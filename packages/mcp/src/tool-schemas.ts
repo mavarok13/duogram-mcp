@@ -12,6 +12,13 @@ const size = z
   .strict();
 const textStyle = z
   .object({
+    font_family: z.enum([
+      "Roboto",
+      "Montserrat",
+      "Open Sans",
+      "Source Sans 3",
+      "System UI",
+    ]),
     horizontal_alignment: z.enum(["left", "center", "right"]),
     vertical_alignment: z.enum(["top", "center", "bottom"]),
     bold: z.boolean(),

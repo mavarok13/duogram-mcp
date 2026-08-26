@@ -52,6 +52,20 @@ The project does not have a released version yet.
   Vite bundle through `file://` URLs.
 - Kept browser-side board operations free of the Node storage and Ajv runtime,
   preventing CSP `unsafe-eval` failures in the Electron renderer.
+- Fixed SVG text hit testing so standalone text can be selected and dragged.
+- Added additive multi-selection with Shift/Ctrl/Cmd, group dragging, left
+  mouse-button panning on the empty canvas, and center-anchored wheel zoom.
+- Added shape border editing for visibility, style, thickness, and color.
+- Added bundled Roboto, Montserrat, Open Sans, and Source Sans 3 font choices
+  under SIL Open Font License 1.1, plus persisted `font_family` styling.
+- Fixed text selection and movement by restoring pointer events on SVG text.
+- Added additive multi-selection, group dragging, left-button canvas panning,
+  and center-anchored mouse-wheel zoom.
+- Added shape border editing and bundled Roboto, Montserrat, Open Sans, and
+  Source Sans 3 font choices under SIL Open Font License 1.1.
+- Added persisted `font_family` styling with a Roboto default for legacy boards.
+- Added mouse resize handles for shapes and standalone text with minimum sizes.
+- Added automatic word wrapping and clipping for text inside element blocks.
 
 ### Removed
 

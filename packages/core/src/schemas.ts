@@ -22,6 +22,7 @@ const textStyle = {
   type: "object",
   additionalProperties: false,
   required: [
+    "font_family",
     "horizontal_alignment",
     "vertical_alignment",
     "bold",
@@ -30,6 +31,9 @@ const textStyle = {
     "strikethrough",
   ],
   properties: {
+    font_family: {
+      enum: ["Roboto", "Montserrat", "Open Sans", "Source Sans 3", "System UI"],
+    },
     horizontal_alignment: { enum: ["left", "center", "right"] },
     vertical_alignment: { enum: ["top", "center", "bottom"] },
     bold: { type: "boolean" },

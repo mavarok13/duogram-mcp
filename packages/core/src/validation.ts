@@ -29,9 +29,10 @@ export function parseProjectJson(json: string): ProjectV1 {
 
 export function validateBoard(value: unknown): BoardV1 {
   const migrated = migrateVersioned("board", value, 1, new Map());
-  assertSchema(validateBoardSchema, migrated, "board");
-  assertBoardInvariants(migrated);
-  return migrated;
+  const normalized = normalizeLegacyBoard(migrated);
+  assertSchema(validateBoardSchema, normalized, "board");
+  assertBoardInvariants(normalized);
+  return normalized;
 }
 
 export function validateProject(value: unknown): ProjectV1 {
@@ -48,6 +49,27 @@ function parseJson(json: string, kind: string): unknown {
     const detail = error instanceof Error ? error.message : String(error);
     throw new DuogramValidationError(`invalid ${kind} JSON: ${detail}`);
   }
+}
+
+function normalizeLegacyBoard(value: unknown): unknown {
+  if (!isRecord(value) || !Array.isArray(value["elements"])) return value;
+  const board = structuredClone(value);
+  const elements = board["elements"];
+  if (!Array.isArray(elements)) return board;
+  for (const element of elements) {
+    if (!isRecord(element)) continue;
+    const type = element["type"];
+    if (type !== "shape" && type !== "text") continue;
+    const style = element["text_style"];
+    if (isRecord(style) && style["font_family"] === undefined) {
+      style["font_family"] = "Roboto";
+    }
+  }
+  return board;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function assertSchema<T>(
