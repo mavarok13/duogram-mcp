@@ -98,4 +98,45 @@ describe("desktop project session", () => {
 
     await expect(change).resolves.toBe(value.board.id);
   });
+
+  it("applies revision-checked space and board lifecycle changes", async () => {
+    const value = await fixture();
+    const session = new ProjectSession();
+    sessions.push(session);
+    const opened = await session.open(value.directory);
+    const initialSpace = opened.project.spaces[0];
+    if (initialSpace === undefined) throw new Error("missing fixture space");
+
+    const withSpace = await session.createSpace(
+      "Design",
+      opened.project.revision,
+    );
+    const space = withSpace.spaces[1];
+    if (space === undefined) throw new Error("missing created space");
+    const created = await session.createBoard(
+      space.id,
+      "Draft",
+      withSpace.revision,
+    );
+    const renamed = await session.renameBoard(
+      created.board.id,
+      "Final",
+      created.project.revision,
+    );
+    const moved = await session.moveBoard(
+      created.board.id,
+      initialSpace.id,
+      undefined,
+      renamed.revision,
+    );
+    const deleted = await session.deleteBoard(
+      created.board.id,
+      moved.revision,
+      created.board.revision,
+    );
+
+    expect(deleted.spaces[0]?.boards).toEqual([
+      { id: value.board.id, name: "Board 1" },
+    ]);
+  });
 });

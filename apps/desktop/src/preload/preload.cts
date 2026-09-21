@@ -8,6 +8,12 @@ const IPC_CHANNELS = {
   readProject: "duogram:read-project",
   readBoard: "duogram:read-board",
   writeBoard: "duogram:write-board",
+  createSpace: "duogram:create-space",
+  renameSpace: "duogram:rename-space",
+  createBoard: "duogram:create-board",
+  renameBoard: "duogram:rename-board",
+  moveBoard: "duogram:move-board",
+  deleteBoard: "duogram:delete-board",
   externalChange: "duogram:external-change",
 } as const;
 
@@ -17,6 +23,44 @@ const api: DuogramDesktopApi = {
   readBoard: (boardId) => ipcRenderer.invoke(IPC_CHANNELS.readBoard, boardId),
   writeBoard: (board, expectedRevision) =>
     ipcRenderer.invoke(IPC_CHANNELS.writeBoard, board, expectedRevision),
+  createSpace: (name, expectedRevision) =>
+    ipcRenderer.invoke(IPC_CHANNELS.createSpace, name, expectedRevision),
+  renameSpace: (spaceId, name, expectedRevision) =>
+    ipcRenderer.invoke(
+      IPC_CHANNELS.renameSpace,
+      spaceId,
+      name,
+      expectedRevision,
+    ),
+  createBoard: (spaceId, name, expectedRevision) =>
+    ipcRenderer.invoke(
+      IPC_CHANNELS.createBoard,
+      spaceId,
+      name,
+      expectedRevision,
+    ),
+  renameBoard: (boardId, name, expectedRevision) =>
+    ipcRenderer.invoke(
+      IPC_CHANNELS.renameBoard,
+      boardId,
+      name,
+      expectedRevision,
+    ),
+  moveBoard: (boardId, targetSpaceId, targetIndex, expectedRevision) =>
+    ipcRenderer.invoke(
+      IPC_CHANNELS.moveBoard,
+      boardId,
+      targetSpaceId,
+      targetIndex,
+      expectedRevision,
+    ),
+  deleteBoard: (boardId, expectedProjectRevision, expectedBoardRevision) =>
+    ipcRenderer.invoke(
+      IPC_CHANNELS.deleteBoard,
+      boardId,
+      expectedProjectRevision,
+      expectedBoardRevision,
+    ),
   onExternalChange: (listener) => {
     const handler = (
       _event: Electron.IpcRendererEvent,

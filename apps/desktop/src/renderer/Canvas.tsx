@@ -26,6 +26,13 @@ interface DragState {
   startPan: Point;
 }
 
+interface ViewportSize {
+  width: number;
+  height: number;
+}
+
+const DEFAULT_VIEWPORT: ViewportSize = { width: 1200, height: 760 };
+
 export type ResizeHandle = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
 
 export function Canvas({
@@ -39,6 +46,27 @@ export function Canvas({
   const [preview, setPreview] = useState<BoardV1 | null>(null);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState<Point>({ x: 0, y: 0 });
+  const [viewport, setViewport] = useState<ViewportSize>(DEFAULT_VIEWPORT);
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    const panel = svg?.parentElement;
+    if (panel === null || panel === undefined) return;
+    const updateViewport = () => {
+      const rect = panel.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+      setViewport({
+        width: (DEFAULT_VIEWPORT.height * rect.width) / rect.height,
+        height: DEFAULT_VIEWPORT.height,
+      });
+    };
+    updateViewport();
+    const observer = new ResizeObserver(updateViewport);
+    observer.observe(panel);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     setPreview(null);
@@ -128,8 +156,8 @@ export function Canvas({
     if (drag.elementIds.length === 0) {
       const rect = svgRef.current?.getBoundingClientRect();
       if (rect === undefined) return;
-      const viewWidth = 1200 / zoom;
-      const viewHeight = 760 / zoom;
+      const viewWidth = viewport.width / zoom;
+      const viewHeight = viewport.height / zoom;
       setPan({
         x:
           drag.startPan.x -
@@ -186,7 +214,7 @@ export function Canvas({
         <button
           type="button"
           onClick={() => {
-            setZoomCentered(-0.1, zoom, setZoom, setPan);
+            setZoomCentered(-0.1, zoom, setZoom, setPan, viewport);
           }}
         >
           -
@@ -195,7 +223,7 @@ export function Canvas({
         <button
           type="button"
           onClick={() => {
-            setZoomCentered(0.1, zoom, setZoom, setPan);
+            setZoomCentered(0.1, zoom, setZoom, setPan, viewport);
           }}
         >
           +
@@ -204,14 +232,20 @@ export function Canvas({
       <svg
         ref={svgRef}
         className="board-canvas"
-        viewBox={`${String(pan.x)} ${String(pan.y)} ${String(1200 / zoom)} ${String(760 / zoom)}`}
+        viewBox={`${String(pan.x)} ${String(pan.y)} ${String(viewport.width / zoom)} ${String(viewport.height / zoom)}`}
         onPointerMove={moveDrag}
         onPointerUp={finishDrag}
         onPointerCancel={finishDrag}
         onPointerDown={startPan}
         onWheel={(event) => {
           event.preventDefault();
-          setZoomCentered(event.deltaY < 0 ? 0.1 : -0.1, zoom, setZoom, setPan);
+          setZoomCentered(
+            event.deltaY < 0 ? 0.1 : -0.1,
+            zoom,
+            setZoom,
+            setPan,
+            viewport,
+          );
         }}
       >
         <defs>
@@ -245,8 +279,10 @@ export function Canvas({
           </marker>
         </defs>
         <rect
-          width="100%"
-          height="100%"
+          x={pan.x}
+          y={pan.y}
+          width={viewport.width / zoom}
+          height={viewport.height / zoom}
           fill="url(#grid)"
           pointerEvents="none"
         />
@@ -586,10 +622,18 @@ function setZoomCentered(
   currentZoom: number,
   setZoom: (value: number) => void,
   setPan: (value: Point | ((current: Point) => Point)) => void,
+  viewport: ViewportSize = DEFAULT_VIEWPORT,
 ): void {
-  const next = zoomViewBoxCentered({ x: 0, y: 0 }, currentZoom, delta);
+  const next = zoomViewBoxCentered(
+    { x: 0, y: 0 },
+    currentZoom,
+    delta,
+    viewport,
+  );
   if (next.zoom === currentZoom) return;
-  setPan((current) => zoomViewBoxCentered(current, currentZoom, delta).pan);
+  setPan(
+    (current) => zoomViewBoxCentered(current, currentZoom, delta, viewport).pan,
+  );
   setZoom(next.zoom);
 }
 
@@ -597,13 +641,14 @@ export function zoomViewBoxCentered(
   pan: Point,
   currentZoom: number,
   delta: number,
+  viewport: ViewportSize = DEFAULT_VIEWPORT,
 ): { pan: Point; zoom: number } {
   const zoom = Math.max(0.5, Math.min(2, currentZoom + delta));
   if (zoom === currentZoom) return { pan, zoom };
-  const oldWidth = 1200 / currentZoom;
-  const oldHeight = 760 / currentZoom;
-  const newWidth = 1200 / zoom;
-  const newHeight = 760 / zoom;
+  const oldWidth = viewport.width / currentZoom;
+  const oldHeight = viewport.height / currentZoom;
+  const newWidth = viewport.width / zoom;
+  const newHeight = viewport.height / zoom;
   return {
     zoom,
     pan: {

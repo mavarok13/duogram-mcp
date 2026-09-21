@@ -105,5 +105,10 @@ export type ProjectOperation =
   | { type: "delete_space"; space_id: string }
   | { type: "add_board"; space_id: string; board: BoardSummary }
   | { type: "rename_board"; board_id: string; name: string }
-  | { type: "move_board"; board_id: string; target_space_id: string }
+  | {
+      type: "move_board";
+      board_id: string;
+      target_space_id: string;
+      target_index?: number;
+    }
   | { type: "delete_board"; board_id: string };

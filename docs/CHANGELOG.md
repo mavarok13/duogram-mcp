@@ -66,6 +66,12 @@ The project does not have a released version yet.
 - Added persisted `font_family` styling with a Roboto default for legacy boards.
 - Added mouse resize handles for shapes and standalone text with minimum sizes.
 - Added automatic word wrapping and clipping for text inside element blocks.
+- Added desktop controls for creating, renaming, deleting, reordering, and
+  moving boards between spaces, including revision-checked project writes.
+- Added desktop `agent_meta` JSON editing and a constrained, scrollable
+  inspector layout.
+- Fixed responsive canvas grid bounds during zoom so the grid remains aligned
+  with the current viewport.
 
 ### Removed
 

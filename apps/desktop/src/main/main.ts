@@ -69,6 +69,60 @@ function registerIpc(): void {
     (_event, board: BoardV1, expectedRevision: number) =>
       desktopResult(() => session.writeBoard(board, expectedRevision)),
   );
+  ipcMain.handle(
+    IPC_CHANNELS.createSpace,
+    (_event, name: string, expectedRevision: number) =>
+      desktopResult(() => session.createSpace(name, expectedRevision)),
+  );
+  ipcMain.handle(
+    IPC_CHANNELS.renameSpace,
+    (_event, spaceId: string, name: string, expectedRevision: number) =>
+      desktopResult(() => session.renameSpace(spaceId, name, expectedRevision)),
+  );
+  ipcMain.handle(
+    IPC_CHANNELS.createBoard,
+    (_event, spaceId: string, name: string, expectedRevision: number) =>
+      desktopResult(() => session.createBoard(spaceId, name, expectedRevision)),
+  );
+  ipcMain.handle(
+    IPC_CHANNELS.renameBoard,
+    (_event, boardId: string, name: string, expectedRevision: number) =>
+      desktopResult(() => session.renameBoard(boardId, name, expectedRevision)),
+  );
+  ipcMain.handle(
+    IPC_CHANNELS.moveBoard,
+    (
+      _event,
+      boardId: string,
+      targetSpaceId: string,
+      targetIndex: number | undefined,
+      expectedRevision: number,
+    ) =>
+      desktopResult(() =>
+        session.moveBoard(
+          boardId,
+          targetSpaceId,
+          targetIndex,
+          expectedRevision,
+        ),
+      ),
+  );
+  ipcMain.handle(
+    IPC_CHANNELS.deleteBoard,
+    (
+      _event,
+      boardId: string,
+      expectedProjectRevision: number,
+      expectedBoardRevision: number,
+    ) =>
+      desktopResult(() =>
+        session.deleteBoard(
+          boardId,
+          expectedProjectRevision,
+          expectedBoardRevision,
+        ),
+      ),
+  );
 }
 
 void app.whenReady().then(() => {

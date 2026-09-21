@@ -35,7 +35,12 @@ export function applyProjectOperations(
         findBoard(spaces, operation.board_id).board.name = operation.name;
         break;
       case "move_board":
-        moveBoard(spaces, operation.board_id, operation.target_space_id);
+        moveBoard(
+          spaces,
+          operation.board_id,
+          operation.target_space_id,
+          operation.target_index,
+        );
         break;
       case "delete_board":
         deleteBoard(spaces, operation.board_id);
@@ -81,12 +86,16 @@ function moveBoard(
   spaces: Space[],
   boardId: string,
   targetSpaceId: string,
+  targetIndex?: number,
 ): void {
   const located = findBoard(spaces, boardId);
   const target = findSpace(spaces, targetSpaceId);
-  if (located.space === target) return;
   located.space.boards.splice(located.index, 1);
-  target.boards.push(located.board);
+  const index =
+    targetIndex === undefined
+      ? target.boards.length
+      : Math.max(0, Math.min(targetIndex, target.boards.length));
+  target.boards.splice(index, 0, located.board);
 }
 
 function deleteBoard(spaces: Space[], boardId: string): void {

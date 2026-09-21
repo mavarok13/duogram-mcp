@@ -37,4 +37,34 @@ describe("project operations", () => {
       ]),
     ).toThrow(/space is not empty/);
   });
+
+  it("reorders boards within a space", () => {
+    const original = project();
+    const firstSpace = original.spaces[0];
+    if (firstSpace === undefined) throw new Error("missing fixture space");
+    const secondBoard = { id: IDs.other, name: "Frontend" };
+    const withTwoBoards = {
+      ...original,
+      spaces: [
+        {
+          ...firstSpace,
+          boards: [...firstSpace.boards, secondBoard],
+        },
+      ],
+    };
+
+    const result = applyProjectOperations(withTwoBoards, 0, [
+      {
+        type: "move_board",
+        board_id: IDs.board,
+        target_space_id: IDs.space,
+        target_index: 1,
+      },
+    ]);
+
+    expect(result.spaces[0]?.boards).toEqual([
+      secondBoard,
+      { id: IDs.board, name: "Backend" },
+    ]);
+  });
 });

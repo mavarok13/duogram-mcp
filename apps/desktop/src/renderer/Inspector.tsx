@@ -1,6 +1,9 @@
+import { useEffect, useState } from "react";
+
 import type {
   Element,
   FontFamily,
+  JsonValue,
   ShapeElement,
   TextElement,
 } from "@duogram/core";
@@ -74,6 +77,8 @@ export function Inspector({ element, onChange, onDelete }: InspectorProps) {
         </div>
       </label>
 
+      <AgentMetaField element={element} onChange={onChange} />
+
       {element.type === "shape" && (
         <>
           <label className="field">
@@ -124,6 +129,58 @@ export function Inspector({ element, onChange, onDelete }: InspectorProps) {
         Delete element
       </button>
     </aside>
+  );
+}
+
+function AgentMetaField({
+  element,
+  onChange,
+}: {
+  element: Element;
+  onChange: (element: Element) => void;
+}) {
+  const serialized = JSON.stringify(element.agent_meta, null, 2);
+  const [draft, setDraft] = useState(serialized);
+  const [invalid, setInvalid] = useState(false);
+
+  useEffect(() => {
+    setDraft(serialized);
+    setInvalid(false);
+  }, [element.id, serialized]);
+
+  return (
+    <label className="field agent-meta-field">
+      <span>Agent meta</span>
+      <textarea
+        value={draft}
+        rows={6}
+        spellCheck={false}
+        aria-invalid={invalid}
+        onChange={(event) => {
+          const value = event.target.value;
+          setDraft(value);
+          try {
+            const parsed: unknown = JSON.parse(value);
+            if (
+              parsed === null ||
+              typeof parsed !== "object" ||
+              Array.isArray(parsed)
+            ) {
+              setInvalid(true);
+              return;
+            }
+            setInvalid(false);
+            onChange({
+              ...element,
+              agent_meta: parsed as Record<string, JsonValue>,
+            });
+          } catch {
+            setInvalid(true);
+          }
+        }}
+      />
+      <small>{invalid ? "Enter a valid JSON object" : "JSON object"}</small>
+    </label>
   );
 }
 

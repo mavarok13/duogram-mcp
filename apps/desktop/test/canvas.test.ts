@@ -142,4 +142,18 @@ describe("canvas zoom", () => {
 
     expect(newCenter).toEqual(oldCenter);
   });
+
+  it("uses the responsive viewport dimensions for the zoom anchor", () => {
+    const result = zoomViewBoxCentered({ x: 100, y: 80 }, 1, 0.5, {
+      width: 900,
+      height: 760,
+    });
+    const oldCenter = { x: 100 + 450, y: 80 + 380 };
+    const newCenter = {
+      x: result.pan.x + 900 / result.zoom / 2,
+      y: result.pan.y + 760 / result.zoom / 2,
+    };
+
+    expect(newCenter).toEqual(oldCenter);
+  });
 });

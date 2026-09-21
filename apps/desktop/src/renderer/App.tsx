@@ -16,6 +16,7 @@ import { Inspector } from "./Inspector.js";
 import { Sidebar } from "./Sidebar.js";
 import type {
   DesktopError,
+  DesktopResult,
   ExternalChange,
   OpenProjectValue,
 } from "../shared/api.js";
@@ -87,6 +88,110 @@ export function App() {
       return;
     }
     if (result.value !== null) await acceptProject(result.value);
+  };
+
+  const projectEditBlocked = (): boolean => {
+    if (!dirty) return false;
+    setError({
+      code: "UNKNOWN",
+      message: "Wait for autosave before changing project navigation.",
+    });
+    return true;
+  };
+
+  const applyProjectResult = (result: DesktopResult<ProjectV1>): boolean => {
+    if (!result.ok) {
+      setError(result.error);
+      return false;
+    }
+    setProject(result.value);
+    setError(null);
+    return true;
+  };
+
+  const renameBoard = async (boardId: string) => {
+    if (projectEditBlocked()) return;
+    const currentName = project === null ? "" : boardName(project, boardId);
+    const name = window.prompt("Board name", currentName)?.trim();
+    if (name === undefined || name.length === 0 || project === null) return;
+    applyProjectResult(
+      await window.duogram.renameBoard(boardId, name, project.revision),
+    );
+  };
+
+  const createSpace = async () => {
+    if (projectEditBlocked() || project === null) return;
+    const name = window.prompt("New space name", "New space")?.trim();
+    if (name === undefined || name.length === 0) return;
+    applyProjectResult(
+      await window.duogram.createSpace(name, project.revision),
+    );
+  };
+
+  const createBoard = async (spaceId: string) => {
+    if (projectEditBlocked() || project === null) return;
+    const name = window.prompt("New board name", "New board")?.trim();
+    if (name === undefined || name.length === 0) return;
+    const result = await window.duogram.createBoard(
+      spaceId,
+      name,
+      project.revision,
+    );
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    setProject(result.value.project);
+    await loadBoard(result.value.board.id);
+  };
+
+  const deleteBoard = async (boardId: string) => {
+    if (projectEditBlocked() || project === null) return;
+    const name = boardName(project, boardId);
+    if (!window.confirm(`Delete board "${name}"?`)) return;
+    const boardResult = await window.duogram.readBoard(boardId);
+    if (!boardResult.ok) {
+      setError(boardResult.error);
+      return;
+    }
+    const result = await window.duogram.deleteBoard(
+      boardId,
+      project.revision,
+      boardResult.value.revision,
+    );
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    setProject(result.value);
+    if (selectedBoardId === boardId) {
+      const nextBoardId = firstBoardId(result.value);
+      if (nextBoardId === null) {
+        setSelectedBoardId(null);
+        setHistory(null);
+        setSelectedElementIds([]);
+      } else {
+        await loadBoard(nextBoardId);
+      }
+    }
+  };
+
+  const moveBoard = async (
+    boardId: string,
+    targetSpaceId: string,
+    targetIndex?: number,
+  ) => {
+    if (projectEditBlocked() || project === null) return;
+    const source = locateBoard(project, boardId);
+    if (source === null) return;
+    applyProjectResult(
+      await window.duogram.moveBoard(
+        boardId,
+        targetSpaceId,
+        targetIndex,
+        project.revision,
+      ),
+    );
   };
 
   const commitBoard = (next: BoardV1) => {
@@ -186,8 +291,28 @@ export function App() {
       if (project === null) return;
       if (change.kind === "project") {
         const result = await window.duogram.readProject();
-        if (result.ok) setProject(result.value);
-        else setError(result.error);
+        if (!result.ok) {
+          setError(result.error);
+          return;
+        }
+        setProject(result.value);
+        if (
+          selectedBoardId !== null &&
+          locateBoard(result.value, selectedBoardId) === null
+        ) {
+          if (dirty) {
+            setConflict("The current board was removed from the project.");
+            return;
+          }
+          const nextBoardId = firstBoardId(result.value);
+          if (nextBoardId === null) {
+            setSelectedBoardId(null);
+            setHistory(null);
+            setSelectedElementIds([]);
+          } else {
+            await loadBoard(nextBoardId);
+          }
+        }
         return;
       }
       const affectsBoard =
@@ -275,6 +400,13 @@ export function App() {
           }
         }}
         onOpenProject={() => void chooseProject()}
+        onCreateSpace={() => void createSpace()}
+        onCreateBoard={(spaceId) => void createBoard(spaceId)}
+        onRenameBoard={(boardId) => void renameBoard(boardId)}
+        onDeleteBoard={(boardId) => void deleteBoard(boardId)}
+        onMoveBoard={(boardId, targetSpaceId, targetIndex) =>
+          void moveBoard(boardId, targetSpaceId, targetIndex)
+        }
       />
       <section className="workspace">
         <header className="workspace-toolbar">
@@ -316,10 +448,18 @@ export function App() {
               Arrow
             </button>
           </div>
-          <div className="board-title">
+          <button
+            type="button"
+            className="board-title"
+            title="Rename board"
+            disabled={board === null}
+            onClick={() => {
+              if (selectedBoardId !== null) void renameBoard(selectedBoardId);
+            }}
+          >
             <strong>{boardName(project, selectedBoardId)}</strong>
             <span>board rev {savedRevision}</span>
-          </div>
+          </button>
           <div className="toolbar-actions">
             <button
               type="button"
@@ -459,6 +599,17 @@ function boardName(project: ProjectV1, boardId: string | null): string {
     if (board !== undefined) return board.name;
   }
   return "No board";
+}
+
+function locateBoard(
+  project: ProjectV1,
+  boardId: string,
+): { spaceId: string; index: number } | null {
+  for (const space of project.spaces) {
+    const index = space.boards.findIndex((board) => board.id === boardId);
+    if (index >= 0) return { spaceId: space.id, index };
+  }
+  return null;
 }
 
 function saveLabel(state: SaveState): string {
