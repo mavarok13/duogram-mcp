@@ -81,6 +81,15 @@ export class ProjectSession {
     ]);
   }
 
+  async deleteSpace(
+    spaceId: string,
+    expectedRevision: number,
+  ): Promise<ProjectV1> {
+    return this.updateProject(expectedRevision, [
+      { type: "delete_space", space_id: spaceId },
+    ]);
+  }
+
   async createBoard(
     spaceId: string,
     name: string,

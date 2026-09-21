@@ -113,10 +113,15 @@ describe("desktop project session", () => {
     );
     const space = withSpace.spaces[1];
     if (space === undefined) throw new Error("missing created space");
+    const renamedSpace = await session.renameSpace(
+      space.id,
+      "Design renamed",
+      withSpace.revision,
+    );
     const created = await session.createBoard(
       space.id,
       "Draft",
-      withSpace.revision,
+      renamedSpace.revision,
     );
     const renamed = await session.renameBoard(
       created.board.id,
@@ -134,8 +139,33 @@ describe("desktop project session", () => {
       moved.revision,
       created.board.revision,
     );
+    const deletedSpace = await session.deleteSpace(space.id, deleted.revision);
+    const recreated = await session.createSpace(
+      "After deletion",
+      deletedSpace.revision,
+    );
+    const recreatedSpace = recreated.spaces[1];
+    if (recreatedSpace === undefined)
+      throw new Error("missing recreated space");
+    const renamedAfterDeletion = await session.renameSpace(
+      recreatedSpace.id,
+      "Renamed after deletion",
+      recreated.revision,
+    );
+    const renamedBoardAfterDeletion = await session.renameBoard(
+      value.board.id,
+      "Board renamed after deletion",
+      renamedAfterDeletion.revision,
+    );
 
-    expect(deleted.spaces[0]?.boards).toEqual([
+    expect(renamedBoardAfterDeletion.spaces).toHaveLength(2);
+    expect(renamedBoardAfterDeletion.spaces[0]?.boards).toEqual([
+      { id: value.board.id, name: "Board renamed after deletion" },
+    ]);
+    expect(renamedBoardAfterDeletion.spaces[1]?.name).toBe(
+      "Renamed after deletion",
+    );
+    expect(deletedSpace.spaces[0]?.boards).toEqual([
       { id: value.board.id, name: "Board 1" },
     ]);
   });

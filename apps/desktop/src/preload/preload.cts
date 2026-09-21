@@ -10,6 +10,7 @@ const IPC_CHANNELS = {
   writeBoard: "duogram:write-board",
   createSpace: "duogram:create-space",
   renameSpace: "duogram:rename-space",
+  deleteSpace: "duogram:delete-space",
   createBoard: "duogram:create-board",
   renameBoard: "duogram:rename-board",
   moveBoard: "duogram:move-board",
@@ -32,6 +33,8 @@ const api: DuogramDesktopApi = {
       name,
       expectedRevision,
     ),
+  deleteSpace: (spaceId, expectedRevision) =>
+    ipcRenderer.invoke(IPC_CHANNELS.deleteSpace, spaceId, expectedRevision),
   createBoard: (spaceId, name, expectedRevision) =>
     ipcRenderer.invoke(
       IPC_CHANNELS.createBoard,

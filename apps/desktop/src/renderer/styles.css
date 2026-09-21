@@ -2,7 +2,7 @@
   color: #e8eaf0;
   background: #0d0f13;
   font-family: Aptos, "Segoe UI", sans-serif;
-  font-synthesis: none;
+  font-synthesis: style;
   --panel: #15181e;
   --panel-raised: #1b1f27;
   --line: #2a303b;
@@ -159,10 +159,48 @@ button:disabled {
   text-transform: uppercase;
 }
 
+.space-name {
+  min-width: 0;
+  flex: 1;
+  padding: 3px 0;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  text-overflow: ellipsis;
+  text-transform: inherit;
+  white-space: nowrap;
+}
+
+.space-name:hover {
+  color: #e7eaf0;
+}
+
 .space-heading-actions {
   display: flex;
   align-items: center;
   gap: 5px;
+}
+
+.space-heading-actions .space-delete-action {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: #8993a5;
+  font-family: Consolas, monospace;
+  font-size: 9px;
+}
+
+.space-heading-actions .space-delete-action:hover {
+  border-color: #8b4052;
+  color: var(--danger);
 }
 
 .space-heading small {
@@ -226,6 +264,15 @@ button:disabled {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.board-link-editor {
+  cursor: text;
+}
+
+.board-link-editor .inline-name-input {
+  min-width: 0;
+  flex: 1;
 }
 
 .board-link:hover {
@@ -377,6 +424,44 @@ button:disabled {
   color: inherit;
   cursor: pointer;
   font: inherit;
+}
+
+.board-title-editor {
+  display: flex;
+  min-width: 0;
+  justify-content: center;
+}
+
+.board-title-editor .inline-name-input {
+  width: min(220px, 100%);
+  text-align: center;
+}
+
+.inline-name-input {
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid #536075;
+  border-radius: 5px;
+  outline: none;
+  background: #101319;
+  color: #fff;
+  font-size: 12px;
+}
+
+.inline-name-input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 2px rgb(79 209 197 / 10%);
+}
+
+.space-name-input {
+  width: auto;
+  min-width: 0;
+  flex: 1;
+  height: 26px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .board-title:hover:not(:disabled) {
@@ -670,6 +755,10 @@ button:disabled {
   background: #101319;
 }
 
+.field textarea {
+  resize: vertical;
+}
+
 .field textarea,
 .field select {
   padding: 9px;
@@ -894,6 +983,30 @@ button:disabled {
 
 .danger-button:hover {
   border-color: var(--danger);
+}
+
+.delete-confirmation {
+  width: min(400px, calc(100% - 40px));
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: #e8eaf0;
+}
+
+.delete-confirmation::backdrop {
+  background: rgb(0 0 0 / 50%);
+}
+
+.delete-confirmation h2 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 16px;
+}
+
+.delete-confirmation p {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .alert {

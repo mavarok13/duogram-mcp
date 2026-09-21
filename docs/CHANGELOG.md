@@ -73,6 +73,17 @@ The project does not have a released version yet.
 - Fixed responsive canvas grid bounds during zoom so the grid remains aligned
   with the current viewport.
 
+### Fixed
+
+- Replaced native deletion confirmations with an in-app dialog to avoid
+  Electron keyboard-focus loss after deleting boards or spaces.
+- Replaced desktop project, space, and board lifecycle prompts with inline name
+  fields that commit on Enter or clicking elsewhere in the application.
+- Fixed space inline editing styles and added revision-checked desktop space
+  deletion for empty spaces.
+- Fixed italic text rendering and limited inspector textarea resizing to the
+  vertical direction.
+
 ### Removed
 
 - Removed Qdrant and Docker Compose from the development environment in favor

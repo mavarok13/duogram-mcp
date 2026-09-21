@@ -80,6 +80,11 @@ function registerIpc(): void {
       desktopResult(() => session.renameSpace(spaceId, name, expectedRevision)),
   );
   ipcMain.handle(
+    IPC_CHANNELS.deleteSpace,
+    (_event, spaceId: string, expectedRevision: number) =>
+      desktopResult(() => session.deleteSpace(spaceId, expectedRevision)),
+  );
+  ipcMain.handle(
     IPC_CHANNELS.createBoard,
     (_event, spaceId: string, name: string, expectedRevision: number) =>
       desktopResult(() => session.createBoard(spaceId, name, expectedRevision)),

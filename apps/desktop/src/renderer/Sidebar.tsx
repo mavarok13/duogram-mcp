@@ -1,6 +1,8 @@
-import type { DragEvent } from "react";
+import { useRef, useState, type DragEvent } from "react";
 
 import type { ProjectV1 } from "@duogram/core";
+
+import { InlineNameInput } from "./InlineNameInput.js";
 
 interface SidebarProps {
   project: ProjectV1;
@@ -8,9 +10,11 @@ interface SidebarProps {
   selectedBoardId: string | null;
   onSelectBoard: (boardId: string) => void;
   onOpenProject: () => void;
-  onCreateSpace: () => void;
-  onCreateBoard: (spaceId: string) => void;
-  onRenameBoard: (boardId: string) => void;
+  onCreateSpace: (name: string) => void;
+  onRenameSpace: (spaceId: string, name: string) => void;
+  onDeleteSpace: (spaceId: string) => void;
+  onCreateBoard: (spaceId: string, name: string) => void;
+  onRenameBoard: (boardId: string, name: string) => void;
   onDeleteBoard: (boardId: string) => void;
   onMoveBoard: (
     boardId: string,
@@ -28,11 +32,42 @@ export function Sidebar({
   onSelectBoard,
   onOpenProject,
   onCreateSpace,
+  onRenameSpace,
+  onDeleteSpace,
   onCreateBoard,
   onRenameBoard,
   onDeleteBoard,
   onMoveBoard,
 }: SidebarProps) {
+  const [editor, setEditor] = useState<NameEditor | null>(null);
+  const editorRef = useRef<NameEditor | null>(null);
+
+  const openEditor = (next: NameEditor) => {
+    editorRef.current = next;
+    setEditor(next);
+  };
+
+  const commitEditor = (name: string) => {
+    const current = editorRef.current;
+    editorRef.current = null;
+    setEditor(null);
+    if (current === null) return;
+    if (current.kind === "new-space") {
+      onCreateSpace(name);
+    } else if (current.kind === "space") {
+      onRenameSpace(current.spaceId, name);
+    } else if (current.kind === "new-board") {
+      onCreateBoard(current.spaceId, name);
+    } else {
+      onRenameBoard(current.boardId, name);
+    }
+  };
+
+  const cancelEditor = () => {
+    editorRef.current = null;
+    setEditor(null);
+  };
+
   const boardDragOver = (event: DragEvent<HTMLElement>) => {
     if (event.dataTransfer.types.includes(BOARD_DRAG_TYPE)) {
       event.preventDefault();
@@ -77,7 +112,9 @@ export function Sidebar({
             className="add-button"
             title="Create space"
             aria-label="Create space"
-            onClick={onCreateSpace}
+            onClick={() => {
+              openEditor({ kind: "new-space" });
+            }}
           >
             +
           </button>
@@ -92,7 +129,26 @@ export function Sidebar({
             }}
           >
             <div className="space-heading">
-              <span>{space.name}</span>
+              {editor?.kind === "space" && editor.spaceId === space.id ? (
+                <InlineNameInput
+                  value={space.name}
+                  placeholder="Space name"
+                  ariaLabel={`Rename ${space.name}`}
+                  className="space-name-input"
+                  onCommit={commitEditor}
+                  onCancel={cancelEditor}
+                />
+              ) : (
+                <button
+                  type="button"
+                  className="space-name"
+                  onClick={() => {
+                    openEditor({ kind: "space", spaceId: space.id });
+                  }}
+                >
+                  {space.name}
+                </button>
+              )}
               <div className="space-heading-actions">
                 <small>{space.boards.length}</small>
                 <button
@@ -101,10 +157,21 @@ export function Sidebar({
                   title={`Create board in ${space.name}`}
                   aria-label={`Create board in ${space.name}`}
                   onClick={() => {
-                    onCreateBoard(space.id);
+                    openEditor({ kind: "new-board", spaceId: space.id });
                   }}
                 >
                   +
+                </button>
+                <button
+                  type="button"
+                  className="space-delete-action"
+                  title={`Delete ${space.name}`}
+                  aria-label={`Delete ${space.name}`}
+                  onClick={() => {
+                    onDeleteSpace(space.id);
+                  }}
+                >
+                  D
                 </button>
               </div>
             </div>
@@ -112,7 +179,9 @@ export function Sidebar({
               <div
                 key={board.id}
                 className="board-row"
-                draggable
+                draggable={
+                  !(editor?.kind === "board" && editor.boardId === board.id)
+                }
                 onDragStart={(event) => {
                   event.dataTransfer.setData(BOARD_DRAG_TYPE, board.id);
                   event.dataTransfer.effectAllowed = "move";
@@ -122,27 +191,40 @@ export function Sidebar({
                   dropBoard(event, space.id, index);
                 }}
               >
-                <button
-                  type="button"
-                  className={
-                    board.id === selectedBoardId
-                      ? "board-link active"
-                      : "board-link"
-                  }
-                  onClick={() => {
-                    onSelectBoard(board.id);
-                  }}
-                >
-                  <span className="board-dot" />
-                  <span>{board.name}</span>
-                </button>
+                {editor?.kind === "board" && editor.boardId === board.id ? (
+                  <div className="board-link board-link-editor">
+                    <span className="board-dot" />
+                    <InlineNameInput
+                      value={board.name}
+                      placeholder="Board name"
+                      ariaLabel={`Rename ${board.name}`}
+                      onCommit={commitEditor}
+                      onCancel={cancelEditor}
+                    />
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className={
+                      board.id === selectedBoardId
+                        ? "board-link active"
+                        : "board-link"
+                    }
+                    onClick={() => {
+                      onSelectBoard(board.id);
+                    }}
+                  >
+                    <span className="board-dot" />
+                    <span>{board.name}</span>
+                  </button>
+                )}
                 <div className="board-actions">
                   <button
                     type="button"
                     title={`Rename ${board.name}`}
                     aria-label={`Rename ${board.name}`}
                     onClick={() => {
-                      onRenameBoard(board.id);
+                      openEditor({ kind: "board", boardId: board.id });
                     }}
                   >
                     R
@@ -161,19 +243,50 @@ export function Sidebar({
                 </div>
               </div>
             ))}
-            {space.boards.length === 0 && (
-              <button
-                type="button"
-                className="empty-space"
-                onClick={() => {
-                  onCreateBoard(space.id);
-                }}
-              >
-                No boards, create one
-              </button>
+            {space.boards.length === 0 &&
+              !(
+                editor?.kind === "new-board" && editor.spaceId === space.id
+              ) && (
+                <button
+                  type="button"
+                  className="empty-space"
+                  onClick={() => {
+                    openEditor({ kind: "new-board", spaceId: space.id });
+                  }}
+                >
+                  No boards, create one
+                </button>
+              )}
+            {editor?.kind === "new-board" && editor.spaceId === space.id && (
+              <div className="board-row pending-board-row">
+                <div className="board-link board-link-editor">
+                  <span className="board-dot" />
+                  <InlineNameInput
+                    value=""
+                    placeholder="Board name"
+                    ariaLabel={`New board in ${space.name}`}
+                    onCommit={commitEditor}
+                    onCancel={cancelEditor}
+                  />
+                </div>
+              </div>
             )}
           </section>
         ))}
+        {editor?.kind === "new-space" && (
+          <section className="space-section pending-space-section">
+            <div className="space-heading">
+              <InlineNameInput
+                value=""
+                placeholder="Space name"
+                ariaLabel="New space name"
+                className="space-name-input"
+                onCommit={commitEditor}
+                onCancel={cancelEditor}
+              />
+            </div>
+          </section>
+        )}
       </nav>
       <div className="sidebar-footer">
         <span>Project revision</span>
@@ -182,3 +295,9 @@ export function Sidebar({
     </aside>
   );
 }
+
+type NameEditor =
+  | { kind: "new-space" }
+  | { kind: "space"; spaceId: string }
+  | { kind: "new-board"; spaceId: string }
+  | { kind: "board"; boardId: string };

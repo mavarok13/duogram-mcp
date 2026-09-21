@@ -7,6 +7,7 @@ export const IPC_CHANNELS = {
   writeBoard: "duogram:write-board",
   createSpace: "duogram:create-space",
   renameSpace: "duogram:rename-space",
+  deleteSpace: "duogram:delete-space",
   createBoard: "duogram:create-board",
   renameBoard: "duogram:rename-board",
   moveBoard: "duogram:move-board",
@@ -56,6 +57,10 @@ export interface DuogramDesktopApi {
   renameSpace(
     spaceId: string,
     name: string,
+    expectedRevision: number,
+  ): Promise<DesktopResult<ProjectV1>>;
+  deleteSpace(
+    spaceId: string,
     expectedRevision: number,
   ): Promise<DesktopResult<ProjectV1>>;
   createBoard(
