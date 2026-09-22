@@ -12,7 +12,7 @@
     "dist:npm": "pnpm build && pnpm --filter @duogram/core pack --pack-destination release && pnpm --filter @duogram/mcp pack --pack-destination release",
     "smoke:install": "node scripts/smoke-install.mjs",
     "build": "pnpm --recursive --if-present run build",
-    "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
+    "check": "pnpm run format:check && pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",

@@ -83,6 +83,9 @@ The project does not have a released version yet.
 
 ### Fixed
 
+- Run TypeScript project builds before typed linting so checks resolve workspace
+  package declarations on a clean CI checkout.
+
 - Replaced native deletion confirmations with an in-app dialog to avoid
   Electron keyboard-focus loss after deleting boards or spaces.
 - Replaced desktop project, space, and board lifecycle prompts with inline name
