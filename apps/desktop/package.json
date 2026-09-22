@@ -2,6 +2,7 @@
   "name": "@duogram/desktop",
   "version": "0.1.0",
   "description": "Local-first visual boards for users and agents",
+  "homepage": "https://github.com/mavarok13/duogram-mcp",
   "author": "Duogram contributors",
   "license": "UNLICENSED",
   "private": true,
