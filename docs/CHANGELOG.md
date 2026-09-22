@@ -13,9 +13,9 @@ The project does not have a released version yet.
   three-platform release workflow for npm and GitHub publication.
 - Added isolated tarball installation, CLI initialization, and MCP handshake
   smoke checks, plus distribution and signing documentation.
-- Built the unsigned Windows x64 NSIS installer and verified isolated npm
-  package installation for the 0.1.0 release preparation. Publication and
-  macOS/Linux build execution remain pending.
+- Built unsigned Windows x64 NSIS, macOS arm64 DMG/ZIP, and Linux x64
+  AppImage/DEB artifacts, and verified isolated npm package installation and
+  all 39 tests on all three platforms for the 0.1.0 release preparation.
 
 - Initialized the local Git repository with a `main` branch.
 - Added repository ignore and cross-platform line-ending rules.

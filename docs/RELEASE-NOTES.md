@@ -1,6 +1,6 @@
 # Duogram 0.1.0
 
-First release candidate of the local-first visual board system:
+First release of the local-first visual board system:
 
 - Electron desktop with shapes, text, arrows, board navigation, autosave,
   session undo/redo, and external-edit conflict handling.

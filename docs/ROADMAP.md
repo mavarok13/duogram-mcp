@@ -44,9 +44,7 @@ changes belong in `CHANGELOG.md`.
 
 ## 5. Distribution
 
-- [ ] Build desktop artifacts for Windows, macOS, and Linux.
-      Native packaging and a three-platform release workflow are configured;
-      all-platform execution is pending.
+- [x] Build desktop artifacts for Windows, macOS, and Linux.
 - [ ] Publish the npm CLI and MCP package.
 - [ ] Add clean-machine installation and end-to-end smoke tests.
       Isolated npm installation and MCP handshake smoke coverage is configured;
