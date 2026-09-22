@@ -42,6 +42,7 @@
       "identity": null
     },
     "linux": {
+      "executableName": "duogram",
       "target": [
         "AppImage",
         "deb"

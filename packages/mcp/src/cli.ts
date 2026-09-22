@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import path from "node:path";
+import { realpathSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 import { initializeProject } from "./initialize.js";
@@ -53,7 +54,7 @@ function positional(args: readonly string[]): string | undefined {
 
 const isEntryPoint =
   process.argv[1] !== undefined &&
-  import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
+  import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
 
 if (isEntryPoint) {
   runCli(process.argv.slice(2)).catch((error: unknown) => {

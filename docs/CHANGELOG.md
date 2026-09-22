@@ -83,6 +83,9 @@ The project does not have a released version yet.
 
 ### Fixed
 
+- Resolve CLI entrypoint symlinks, including macOS temporary installation paths,
+  and use an unscoped executable name for Linux desktop packaging.
+
 - Run TypeScript project builds before typed linting so checks resolve workspace
   package declarations on a clean CI checkout.
 
