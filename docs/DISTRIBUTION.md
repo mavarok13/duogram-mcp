@@ -30,6 +30,9 @@ push it, then push the matching `v0.1.0` tag. The Release workflow checks all
 three platforms, packages desktop applications, tests npm installations, then
 publishes core before MCP and creates a GitHub release with SHA-256 checksums.
 Run the workflow manually for artifact-only validation without publication.
+To publish an existing tag using the latest workflow fixes, supply its name in
+the manual `release_tag` input; source and release notes are checked out from
+that tag rather than the workflow branch.
 If publication partially succeeds, inspect npm and GitHub before retrying:
 npm versions cannot be overwritten.
 
