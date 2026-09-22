@@ -5,6 +5,7 @@ packages:
 allowBuilds:
   electron: true
   esbuild: true
+  electron-winstaller: false
 
 minimumReleaseAgeExclude:
   - electron@44.0.0

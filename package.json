@@ -1,6 +1,6 @@
 {
   "name": "duogram",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.22.0",
@@ -8,6 +8,9 @@
     "node": ">=22"
   },
   "scripts": {
+    "dist:desktop": "pnpm build && pnpm --filter @duogram/desktop exec electron-builder --publish never",
+    "dist:npm": "pnpm build && pnpm --filter @duogram/core pack --pack-destination release && pnpm --filter @duogram/mcp pack --pack-destination release",
+    "smoke:install": "node scripts/smoke-install.mjs",
     "build": "pnpm --recursive --if-present run build",
     "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
     "format": "prettier --write .",

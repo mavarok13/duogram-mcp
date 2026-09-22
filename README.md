@@ -7,6 +7,13 @@ editing the same boards.
 The project is in its initial development stage. See [project information](docs/INFO.md)
 and the [roadmap](docs/ROADMAP.md) for the current scope and direction.
 
+## Distribution
+
+Build installers with `pnpm dist:desktop` and npm tarballs with `pnpm dist:npm`.
+Run `pnpm smoke:install` after packing to verify an isolated CLI/MCP installation.
+Artifacts are placed in `release/`. See [distribution](docs/DISTRIBUTION.md) for
+the three-platform release workflow, publication access, and signing setup.
+
 ## Development
 
 The workspace requires Node.js 22 or newer and pnpm 11.

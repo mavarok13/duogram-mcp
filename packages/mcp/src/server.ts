@@ -11,7 +11,7 @@ const mutating = { readOnlyHint: false, idempotentHint: false } as const;
 
 export function createMcpServer(projectDirectory: string): McpServer {
   const service = new DuogramService(projectDirectory);
-  const server = new McpServer({ name: "duogram", version: "0.0.0" });
+  const server = new McpServer({ name: "duogram", version: "0.1.0" });
 
   server.registerTool(
     "project_read",

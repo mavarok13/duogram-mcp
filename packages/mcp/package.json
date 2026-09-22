@@ -1,7 +1,19 @@
 {
   "name": "@duogram/mcp",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "description": "Duogram CLI and universal stdio MCP server for visual boards",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mavarok13/duogram-mcp.git",
+    "directory": "packages/mcp"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -15,7 +27,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/*.tsbuildinfo"
   ],
   "scripts": {
     "build": "tsc --build",

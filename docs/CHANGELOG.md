@@ -9,6 +9,14 @@ The project does not have a released version yet.
 
 ### Added
 
+- Prepared version 0.1.0 package metadata, native desktop packaging, and a
+  three-platform release workflow for npm and GitHub publication.
+- Added isolated tarball installation, CLI initialization, and MCP handshake
+  smoke checks, plus distribution and signing documentation.
+- Built the unsigned Windows x64 NSIS installer and verified isolated npm
+  package installation for the 0.1.0 release preparation. Publication and
+  macOS/Linux build execution remain pending.
+
 - Initialized the local Git repository with a `main` branch.
 - Added repository ignore and cross-platform line-ending rules.
 - Added the project guidance set: `AGENTS.md`, `docs/INFO.md`,

@@ -264,6 +264,14 @@ from the latest corresponding read.
 - A published npm CLI and MCP package.
 - A universal MCP interface with OpenCode integration provided as a template.
 
+## Distribution
+
+Distribution uses electron-builder for native installers and pnpm pack for
+the public `@duogram/core` and `@duogram/mcp` packages. The tag-triggered Release
+workflow builds on Windows, macOS, and Linux before publishing npm packages
+and GitHub assets. Current desktop artifacts are unsigned development builds;
+see `DISTRIBUTION.md` for publication and signing requirements.
+
 ## Development Retrieval
 
 This repository uses `codebase-index` for local code retrieval. It stores a
